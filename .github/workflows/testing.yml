@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+env:
+  AZURE_WEBAPP_NAME: current-time-service
+  AZURE_WEBAPP_PACKAGE_PATH: "./publish"
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -16,7 +20,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.x'  # Example version; adjust as needed
+          dotnet-version: '6.0.x'
 
       - name: Restore
         run: dotnet restore ./CurrentTimeService.sln
@@ -25,4 +29,16 @@ jobs:
         run: dotnet build ./CurrentTimeService.sln --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish ./CurrentTimeService.sln --configuration Release --no-build
+        run: dotnet publish ./CurrentTimeService.sln --configuration Release --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+
+       with:
+       app-name: ${{ env.AZURE_WEBAPP_NAME }}
+       publish-profile: 
+       pakage: ${{ env.AZURE_WEBAPP_PATH}}
